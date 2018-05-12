@@ -56,15 +56,15 @@ public abstract class AbstractSigner implements Signer {
     }
     
     private Process createSignerProcess(String command, File fileToSign, File binDirectory) throws InterruptedException, IOException {
-        File outputSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "outputSigning.log");
-        File errorSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "errorSigning.log");
+        //File outputSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "outputSigning.log");
+        //File errorSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "errorSigning.log");
         
         ProcessBuilder builder = new ProcessBuilder(command, fileToSign.getAbsolutePath());
         builder.directory(binDirectory.getAbsoluteFile());
         Process process = builder.start();
         process.waitFor();
-        FileUtils.copyInputStreamToFile(process.getInputStream(), outputSigning);
-        FileUtils.copyInputStreamToFile(process.getErrorStream(), errorSigning);
+        //FileUtils.copyInputStreamToFile(process.getInputStream(), outputSigning);
+        //FileUtils.copyInputStreamToFile(process.getErrorStream(), errorSigning);
         return process;
     }
 
