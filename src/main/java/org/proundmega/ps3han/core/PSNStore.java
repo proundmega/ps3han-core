@@ -18,14 +18,15 @@ import org.proundmega.ps3han.rap.RifOutputFactory;
 public class PSNStore {
     private List<Entry> entries;
     private UserData userData;
+    private String binDir;
 
     public PSNStore(List<Entry> entries) {
         this.entries = entries;
     }
     
-    public static PSNStore of(String fileUrl, UserData userData) throws FileNotFoundException {
-        return new PSNStore(EntryParser.parseEntries(fileUrl), userData);
-    }
+    public PSNStore(String fileUrl, UserData userData, String binDir) throws FileNotFoundException {
+        this(EntryParser.parseEntries(fileUrl), userData, binDir);
+    } 
     
     public PSNStore filterByRegion(Region... region) {
         if(region.length == 0) {
@@ -50,13 +51,13 @@ public class PSNStore {
                 .collect(Collectors.toList());
     }
     
-    public void storeRapsAsPKG() {
+    public String storeRapsAsPKG() {
         try {
             userData.createDirectories();
             userData.copyUserFilesToBin();
             createRaps();
             createRiffs();
-            Plataform.createSigner(userData).packRiff();
+            return Plataform.createSigner(userData).packRiff();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -70,7 +71,7 @@ public class PSNStore {
     }
     
     private void createRiffs() throws IOException {
-        RifOutputFactory factory = new RifOutputFactory(userData);
+        RifOutputFactory factory = new RifOutputFactory(userData, binDir);
         factory.createRiffs();
         copySignedActDatToRiffDir();
     }
@@ -79,6 +80,13 @@ public class PSNStore {
         File actDatSigned = new File(userData.getBinWorkingDirectory() + File.separator + "signed_act.dat");
         File riffDirectory = new File(userData.getRiffWorkingDirectory());
         Files.copy(actDatSigned.toPath(), riffDirectory.toPath().resolve("act.dat"));
+    }
+    
+    public String storeRapsAsPkgAndDeleteIntermediateFiles() {
+        String result = storeRapsAsPKG();
+        userData.deleteTemporalFiles();
+        
+        return result;
     }
 
 }

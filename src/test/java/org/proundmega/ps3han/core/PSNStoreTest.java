@@ -13,14 +13,14 @@ public class PSNStoreTest {
     @Test
     @Ignore
     public void shouldCreateEmptyRapsDirectory() throws FileNotFoundException {
-        PSNStore store = PSNStore.of(TestUtils.getTestResource(TEST_DATABASE_2).getAbsolutePath(), getUserData());
+        PSNStore store = new PSNStore(TestUtils.getTestResource(TEST_DATABASE_2).getAbsolutePath(), getUserData(), null);
         store.storeRapsAsPKG();
         assertTrue(new File(RAPS_OUTPUT_DIRECTORY).exists());
     }
     
     @Test
     public void shouldCreateEmptyRapsDirectory2() throws FileNotFoundException {
-        PSNStore store = PSNStore.of(TestUtils.getTestResource(DEFAULT_DATABASE).getAbsolutePath(), getUserData());
+        PSNStore store = new PSNStore(TestUtils.getTestResource(DEFAULT_DATABASE).getAbsolutePath(), getUserData(), null);
         store.storeRapsAsPKG();
         assertTrue(new File(RAPS_OUTPUT_DIRECTORY).exists());
     }

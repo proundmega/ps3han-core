@@ -11,13 +11,13 @@ import org.proundmega.ps3han.core.UserData;
 
 @AllArgsConstructor
 public class RifOutputFactory {
-
     private UserData userData;
+    private String binDir;
 
     public void createRiffs() throws IOException {
         copyRafsToRifDirectory();
         Signer signer = Plataform.createSigner(userData);
-        signer.copySigner();
+        signer.copySigner(binDir);
         signer.signAllRaps();
         deleteRaps();
     }

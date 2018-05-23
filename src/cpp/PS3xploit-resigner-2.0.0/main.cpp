@@ -9,6 +9,8 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 #define IDPS_KEYBITS 128
 #define ACT_DAT_KEYBITS 128
@@ -1429,6 +1431,21 @@ int parse_ps3_psp_pkg(uint8_t *pkg, uint32_t toc_len, uint8_t *iv_const)
 	return 0;
 }
 
+int read_act_dat_and_make_rif_batch(char *path)
+{
+	DIR *d;
+    struct dirent *dir;
+    d = opendir(path);
+    if (d) {
+      while ((dir = readdir(d)) != NULL) {
+	        printf("%s\n", dir->d_name);
+	        read_act_dat_and_make_rif(dir->d_name);
+      }
+      closedir(d);
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	printf("----------------PS3XPLOIT RESIGNER v2----------------\nHAN v3 tools brought you by W, escortd3w, bguerville, habib\nSpecial thanks to Joonie for testing this tool\n-----------------------------------------------------\n");
@@ -1437,8 +1454,21 @@ int main(int argc, char *argv[])
 	{
 		goto done;
 	}
+
+	if(strcmp(argv[1], "--batchrap") == 0) {
+		if(read_act_dat_and_make_rif_batch(argv[2])==0)
+		{
+			sign_act_dat();
+			printf("\nits done!\npress enter\n");
+		}
+		else
+		{
+			printf("\nverify your files!");
+		}
+		return 0;
+	}
 	
-if((strstr(argv[1], ".rap")) || (strstr(argv[1], ".RAP")))
+else if((strstr(argv[1], ".rap")) || (strstr(argv[1], ".RAP")))
 	{
 		if(read_act_dat_and_make_rif(argv[1])==0)
 		{

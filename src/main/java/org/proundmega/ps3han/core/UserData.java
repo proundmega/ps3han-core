@@ -60,5 +60,10 @@ public class UserData {
         Files.copy(actDat.toPath(), riffDestinyDirectory.toPath().resolve(actDat.getName()));
         Files.copy(ipsHex.toPath(), riffDestinyDirectory.toPath().resolve(ipsHex.getName()));
     }
-
+    
+    public void deleteTemporalFiles() {
+        deleteAndRecreateDirectory(getRapsWorkingDirectory());
+        deleteAndRecreateDirectory(getRiffWorkingDirectory());
+        deleteAndRecreateDirectory(getBinWorkingDirectory());
+    }
 }

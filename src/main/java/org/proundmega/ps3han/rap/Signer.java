@@ -1,8 +1,8 @@
 package org.proundmega.ps3han.rap;
 
 public interface Signer {
-    void copySigner();
+    void copySigner(String origin);
     void signAllRaps();
     void deleteSigner();
-    void packRiff();
+    String packRiff();
 }
