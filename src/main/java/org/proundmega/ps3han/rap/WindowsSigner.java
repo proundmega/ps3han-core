@@ -11,13 +11,14 @@ import java.util.logging.Logger;
 import lombok.AllArgsConstructor;
 import org.proundmega.ps3han.core.UserData;
 
-@AllArgsConstructor
 public class WindowsSigner extends AbstractSigner {
-    private UserData userData;
-
     private static final String BINARY_NAME = "ps3xploit_rifgen_edatresign.exe";
     private static final String LIBRARY_NAME = "cygwin1.dll";
     private static final String PACKER_NAME = "pkg_exdata.exe";
+    
+    public WindowsSigner(UserData userData) {
+        super(userData);
+    }
     
     @Override
     protected List<String> getFilenamesToCopyToBin() {
