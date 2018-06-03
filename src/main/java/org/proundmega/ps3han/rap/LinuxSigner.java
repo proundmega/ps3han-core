@@ -2,6 +2,7 @@ package org.proundmega.ps3han.rap;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.proundmega.ps3han.core.UserData;
 
@@ -27,8 +28,8 @@ public class LinuxSigner extends AbstractSigner {
     }
 
     @Override
-    protected String getPackerCommand() {
-        return "pkg.py";
+    protected List<String> getPackerCommand() {
+        return Arrays.asList("python", "pkg.py");
     }
     
 }

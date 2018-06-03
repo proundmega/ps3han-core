@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.proundmega.ps3han.rap.Plataform;
 import org.proundmega.ps3han.rap.RapOutputFactory;
 import org.proundmega.ps3han.rap.RifOutputFactory;
+import org.proundmega.ps3han.xmb.store.GameStoreCreator;
 
 @AllArgsConstructor
 public class PSNStore {
@@ -87,6 +88,15 @@ public class PSNStore {
         userData.deleteTemporalFiles();
         
         return result;
+    }
+    
+    public void createDatabaseToPs3() {
+        userData.createDirectories();
+        List<Entry> entriesNoPs4 = getEntriesWithRap().stream()
+                .filter(entry -> !entry.getType().equals(Type.PS4))
+                .collect(Collectors.toList());
+        GameStoreCreator store = new GameStoreCreator(entriesNoPs4, userData);
+        store.convertToXmb();
     }
 
 }

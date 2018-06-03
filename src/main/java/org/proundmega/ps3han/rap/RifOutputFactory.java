@@ -36,6 +36,7 @@ public class RifOutputFactory {
         File riffDirectory = new File(userData.getRiffWorkingDirectory());
         File[] raps = riffDirectory.listFiles((dir, filename) -> filename.endsWith(".rap"));
         for(File rap : raps) {
+            System.out.println("Deleted file: " + rap.getName());
             rap.delete();
         }
     }

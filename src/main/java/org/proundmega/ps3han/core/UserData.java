@@ -32,6 +32,10 @@ public class UserData {
     public String getReleaseWorkingDirectory() {
         return workDirectory + File.separator + "release";
     }
+    
+    public String getGameCreatorWorkingDirectory() {
+        return workDirectory + File.separator + "gameCreator";
+    }
 
     public void createDirectories() {
         deleteAndRecreateDirectory(workDirectory);
@@ -40,6 +44,7 @@ public class UserData {
         deleteAndRecreateDirectory(getBinWorkingDirectory());
         deleteAndRecreateDirectory(getLogForWorkingDirectory());
         deleteAndRecreateDirectory(getReleaseWorkingDirectory());
+        deleteAndRecreateDirectory(getGameCreatorWorkingDirectory());
     }
 
     private void deleteAndRecreateDirectory(String directoryName) {

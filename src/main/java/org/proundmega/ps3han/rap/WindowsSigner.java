@@ -1,14 +1,8 @@
 package org.proundmega.ps3han.rap;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.ProcessBuilder.Redirect;
-import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import lombok.AllArgsConstructor;
 import org.proundmega.ps3han.core.UserData;
 
 public class WindowsSigner extends AbstractSigner {
@@ -22,7 +16,7 @@ public class WindowsSigner extends AbstractSigner {
     
     @Override
     protected List<String> getFilenamesToCopyToBin() {
-        List<String> files = new ArrayList<String>();
+        List<String> files = new ArrayList<>();
         files.add(BINARY_NAME);
         files.add(LIBRARY_NAME);
         files.add(PACKER_NAME);
@@ -36,8 +30,9 @@ public class WindowsSigner extends AbstractSigner {
     }
 
     @Override
-    protected String getPackerCommand() {
-        return PACKER_NAME;
+    // TODO falta arreglar el packer de raps en Windows, NO FUNCIONA
+    protected List<String> getPackerCommand() {
+        return Arrays.asList(PACKER_NAME);
     }
 
 }

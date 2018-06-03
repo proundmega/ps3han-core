@@ -21,7 +21,7 @@ public abstract class AbstractSigner implements Signer {
 
     protected abstract String getSignerCommand();
 
-    protected abstract String getPackerCommand();
+    protected abstract List<String> getPackerCommand();
 
     @Override
     public void copySigner(String origin) {
@@ -63,7 +63,7 @@ public abstract class AbstractSigner implements Signer {
         File outputSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "outputSigning.log");
         File errorSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "errorSigning.log");
 
-        ProcessBuilder builder = new ProcessBuilder(command, "--batchrap", riffWorkingDirectory.getAbsolutePath());
+        ProcessBuilder builder = new ProcessBuilder(command, "batchrap", riffWorkingDirectory.getAbsolutePath());
         builder.directory(binDirectory.getAbsoluteFile());
         Process process = builder.start();
         FileUtils.copyInputStreamToFile(process.getInputStream(), outputSigning);
@@ -90,7 +90,7 @@ public abstract class AbstractSigner implements Signer {
     }
 
     private void createPkgFromRiff() throws InterruptedException, IOException, InstantiationException {
-        String command = getPackerCommand();
+        List<String> command = getPackerCommand();
         File riffDir = new File(userData.getRiffWorkingDirectory()).getAbsoluteFile();
         File binDir = new File(userData.getBinWorkingDirectory());
         Process process = createProcessForPacking(command, riffDir, binDir);
@@ -100,15 +100,15 @@ public abstract class AbstractSigner implements Signer {
     }
 
     // it is assumed that for both platforms a python script will be executed
-    private Process createProcessForPacking(String packerCommand, File riffDir, File binDirectory) throws InterruptedException, IOException {
+    private Process createProcessForPacking(List<String> packerCommand, File riffDir, File binDirectory) throws InterruptedException, IOException {
         File outputSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "packer.log");
         File errorSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "errorPacker.log");
-
-        ProcessBuilder builder = new ProcessBuilder("python",
-                 packerCommand,
-                 "--contentid",
-                 PKG_ID,
-                 riffDir.getPath());
+        
+        packerCommand.add("--contentid");
+        packerCommand.add(PKG_ID);
+        packerCommand.add(riffDir.getPath());
+        ProcessBuilder builder = new ProcessBuilder(packerCommand.toArray(new String[10]));
+        
         builder.redirectOutput(ProcessBuilder.Redirect.appendTo(outputSigning));
         builder.redirectError(ProcessBuilder.Redirect.appendTo(errorSigning));
         builder.directory(binDirectory.getAbsoluteFile());

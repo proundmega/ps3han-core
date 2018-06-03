@@ -11,7 +11,6 @@ import org.proundmega.ps3han.TestUtils;
 public class PSNStoreTest {
     
     @Test
-    @Ignore
     public void shouldCreateEmptyRapsDirectory() throws FileNotFoundException {
         PSNStore store = new PSNStore(TestUtils.getTestResource(TEST_DATABASE_2).getAbsolutePath(), getUserData(), null);
         store.storeRapsAsPKG();
@@ -19,9 +18,17 @@ public class PSNStoreTest {
     }
     
     @Test
+    @Ignore
     public void shouldCreateEmptyRapsDirectory2() throws FileNotFoundException {
         PSNStore store = new PSNStore(TestUtils.getTestResource(DEFAULT_DATABASE).getAbsolutePath(), getUserData(), null);
         store.storeRapsAsPKG();
         assertTrue(new File(RAPS_OUTPUT_DIRECTORY).exists());
+    }
+    
+    @Test
+    @Ignore
+    public void createStore() throws FileNotFoundException {
+        PSNStore store = new PSNStore(TestUtils.getTestResource(DEFAULT_DATABASE).getAbsolutePath(), getUserData(), null);
+        store.createDatabaseToPs3();
     }
 }
