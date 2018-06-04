@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
@@ -104,15 +105,17 @@ public abstract class AbstractSigner implements Signer {
         File outputSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "packer.log");
         File errorSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "errorPacker.log");
         
-        packerCommand.add("--contentid");
-        packerCommand.add(PKG_ID);
-        packerCommand.add(riffDir.getPath());
-        ProcessBuilder builder = new ProcessBuilder(packerCommand.toArray(new String[10]));
+        List<String> modifiableCommands = new ArrayList<>(packerCommand);
         
-        builder.redirectOutput(ProcessBuilder.Redirect.appendTo(outputSigning));
-        builder.redirectError(ProcessBuilder.Redirect.appendTo(errorSigning));
+        modifiableCommands.add("--contentid");
+        modifiableCommands.add(PKG_ID);
+        modifiableCommands.add(riffDir.getPath());
+        ProcessBuilder builder = new ProcessBuilder(modifiableCommands.toArray(new String[]{}));
+        
         builder.directory(binDirectory.getAbsoluteFile());
         Process process = builder.start();
+        FileUtils.copyInputStreamToFile(process.getInputStream(), outputSigning);
+        FileUtils.copyInputStreamToFile(process.getErrorStream(), errorSigning);
         process.waitFor();
         return process;
 

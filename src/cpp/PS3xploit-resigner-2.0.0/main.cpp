@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <limits.h>
 
 #define IDPS_KEYBITS 128
 #define ACT_DAT_KEYBITS 128
@@ -20,10 +21,12 @@
 #include "util.h"
 #include "sha1.h"
 #include "pkg2zip_aes.h"
+#define FILE_SEPARATOR "/"
 
 #ifdef _WIN32
 #define fseek _fseeki64
 #define ftell _ftelli64
+#define FILE_SEPARATOR "\\"
 #endif
 
 #define _LARGEFILE64_SOURCE
@@ -1434,14 +1437,29 @@ int parse_ps3_psp_pkg(uint8_t *pkg, uint32_t toc_len, uint8_t *iv_const)
 int read_act_dat_and_make_rif_batch(char *path)
 {
 	DIR *d;
-    struct dirent *dir;
+    struct dirent *rap;
     d = opendir(path);
+
+    // buffer to allocate max path lenght
+	char bufRap[PATH_MAX + 1]; 
+	char bufDir[PATH_MAX + 1];
+
     if (d) {
-      while ((dir = readdir(d)) != NULL) {
-	        printf("%s\n", dir->d_name);
-	        read_act_dat_and_make_rif(dir->d_name);
-      }
-      closedir(d);
+
+    	// first get the real path
+    	realpath(path, bufDir);
+      	while ((rap = readdir(d)) != NULL) {
+
+
+      		// get the real path, we will use it later
+      		sprintf(bufRap, "%s%s%s", bufDir, FILE_SEPARATOR, rap->d_name);
+	        int answer = read_act_dat_and_make_rif(bufRap);
+	        if(answer == -1) {
+	        	printf("Couldn't sign data: %s\n", bufRap);
+	        	return answer;
+	        }
+      	}
+      	closedir(d);
     }
     return 0;
 }
@@ -1455,7 +1473,7 @@ int main(int argc, char *argv[])
 		goto done;
 	}
 
-	if(strcmp(argv[1], "--batchrap") == 0) {
+	if(strcmp(argv[1], "batchrap") == 0) {
 		if(read_act_dat_and_make_rif_batch(argv[2])==0)
 		{
 			sign_act_dat();
