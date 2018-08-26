@@ -1,11 +1,6 @@
 package org.proundmega.ps3han.xmb.file;
-
-
-
-import lombok.Data;
 import org.dom4j.Element;
 
-@Data
 public class DownloadTableAttribute {
     private String id;
     private String pkgSrc;
@@ -26,4 +21,42 @@ public class DownloadTableAttribute {
         
         return downloadElement;
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getPkgSrc() {
+        return pkgSrc;
+    }
+
+    public void setPkgSrc(String pkgSrc) {
+        this.pkgSrc = pkgSrc;
+    }
+
+    public String getContentId() {
+        return contentId;
+    }
+
+    public void setContentId(String contentId) {
+        this.contentId = contentId;
+    }
+
+    public String getUrlImageItem() {
+        return urlImageItem;
+    }
+
+    public void setUrlImageItem(String urlImageItem) {
+        this.urlImageItem = urlImageItem;
+    }
+
+    @Override
+    public String toString() {
+        return "DownloadTableAttribute{" + "id=" + id + ", pkgSrc=" + pkgSrc + ", contentId=" + contentId + ", urlImageItem=" + urlImageItem + '}';
+    }
+    
 }

@@ -174,9 +174,9 @@ static void bn_zero(u8 *d, u32 n)
 	memset(d, 0, n);
 }
 
-void bn_copy(u8 *d, u8 *a, u32 n)
+void bn_copy(u8 *destiny, u8 *origin, u32 lenght)
 {
-	memcpy(d, a, n);
+	memcpy(destiny, origin, lenght);
 }
 
 int bn_compare(u8 *a, u8 *b, u32 n)
@@ -270,7 +270,6 @@ static void bn_mon_muladd_dig(u8 *d, u8 *a, u8 b, u8 *N, u32 n)
 	u32 i;
 
 	u8 z = -(d[n-1] + a[n-1]*b) * inv256[N[n-1]/2];
-
 	dig = d[n-1] + a[n-1]*b + N[n-1]*z;
 	dig >>= 8;
 
@@ -289,17 +288,18 @@ static void bn_mon_muladd_dig(u8 *d, u8 *a, u8 b, u8 *N, u32 n)
 	bn_reduce(d, N, n);
 }
 
-void bn_mon_mul(u8 *d, u8 *a, u8 *b, u8 *N, u32 n)
+void bn_mon_mul(u8 *destiny, u8 *a, u8 *b, u8 *N, u32 size)
 {
-	u8 t[512];
+	u8 workArray[512];
 	u32 i;
 
-	bn_zero(t, n);
+	bn_zero(workArray, size);
 
-	for (i = n - 1; i < n; i--)
-		bn_mon_muladd_dig(t, a, b[i], N, n);
+	for (i = size - 1; i < size; i--) {
+		bn_mon_muladd_dig(workArray, a, b[i], N, size);
+	}
 
-	bn_copy(d, t, n);
+	bn_copy(destiny, workArray, size);
 }
 
 void bn_to_mon(u8 *d, u8 *N, u32 n)
@@ -541,7 +541,7 @@ try_again:
 	if (bn_compare(m, ec_N, 21) >= 0)
 		goto try_again;
 
-	//	R = (mG).x
+	//	R = (mG).xz
 	point_mul(&mG, m, &ec_G);
 	point_from_mon(&mG);
 	R[0] = 0;
@@ -809,6 +809,127 @@ int read_act_dat_and_make_rif(char *path)
 	ecdsa_set_curve();
 	ecdsa_set_pub();
 	ecdsa_set_priv();
+	uint8_t R[0x15];
+	uint8_t S[0x15];
+	ecdsa_sign(sha1_digest, R, S);
+	memcpy(rif+0x70, R+1, 0x14);
+	memcpy(rif+0x70+0x14, S+1, 0x14);
+	sha1(rif, 0xa0,sha1_digest);
+	memcpy(rif+0xa0, sha1_digest,0x10);
+	memcpy(rif+0xb0, sha1_digest,0x10);
+	memset(rif+0xc0, 0, 0x40);
+	_fill_rand_bytes(rif+0x100, 0x100);
+
+	strcpy(path+strlen(path)-4, ".rif");
+	printf("writing:%s\n", path);
+	fp=fopen(path, "wb");
+	fwrite(rif, 0x98,1,fp); //only needed till here
+	fclose(fp);
+		return 0;
+}
+
+/*
+ This method compared to the one listed above does not set every time the ecdsa curves, increasing performance
+*/
+int read_act_dat_and_make_rif_no_ecdsa_setting(char *path)
+{
+	char *content_id=(char *)malloc(256);
+	memset(content_id,0,256);
+	strcpy(content_id, path);
+	char *slash2 = strrchr (content_id, '\\');
+	if (slash2 != NULL)
+	{
+		*slash2 = '\0';
+		content_id=slash2+1;
+	}
+	
+	char *slash_rev = strrchr (content_id, '/');
+	if (slash_rev != NULL)
+	{
+		*slash_rev = '\0';
+		content_id=slash_rev+1;
+	}
+	
+	char *lastdot = strrchr (content_id, '.');
+	if (lastdot != NULL)
+		*lastdot = '\0';
+	
+		
+	uint8_t idps[0x10];
+	aes_context aes_ctxt;
+	uint8_t idps_const[0x10]={0x5E,0x06,0xE0,0x4F,0xD9,0x4A,0x71,0xBF,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01};
+	uint8_t rif_key_const[0x10]={0xDA,0x7D,0x4B,0x5E,0x49,0x9A,0x4F,0x53,0xB1,0xC1,0xA1,0x4A,0x74,0x84,0x44,0x3B};
+		printf("reading:idps.hex\n");
+	FILE *fp=fopen("idps.hex", "rb");
+	if(!fp)
+	{
+		return -1;
+	}
+	fread(idps, 0x10, 1, fp);
+	fclose(fp);
+	uint8_t act_dat_key[0x10];
+	uint8_t klicensee[0x10];
+	uint8_t klicensee_enc_rif[0x10];
+	uint8_t rap[0x10];
+	uint64_t account_id;
+	//uint8_t rifkey[0x10];
+	fp=fopen("act.dat","rb");
+	if(!fp)
+	{
+	//	fp=forge_act_dat();
+		return -1;
+	}
+		printf("reading:act.dat\n");
+	fseek(fp,0x8,SEEK_SET);
+	fread(&account_id, 8,1,fp);//skip aa account need
+	fseek(fp,0x10,SEEK_SET);
+	fread(act_dat_key, 0x10,1,fp); //copy first key in primary table of act.dat
+	fclose(fp);
+
+	printf("reading:%s\n", path);
+	fp=fopen(path, "rb");
+	if(!fp)
+	{
+		return -1;
+	}
+	fread(rap, 0x10,1,fp);
+	fclose(fp);
+	uint8_t *rif=(uint8_t *)malloc(0x200);
+	memset(rif,0,0x200);
+
+	get_rif_key(rap, rif+0x50); //convert rap to rifkey(klicensee)
+	aes_setkey_enc(&aes_ctxt, idps, IDPS_KEYBITS);
+	aes_crypt_ecb(&aes_ctxt, AES_ENCRYPT, idps_const, idps_const);
+	
+	aes_setkey_dec(&aes_ctxt, idps_const, IDPS_KEYBITS);
+	aes_crypt_ecb(&aes_ctxt, AES_DECRYPT, act_dat_key, act_dat_key);
+	
+	
+	aes_setkey_enc(&aes_ctxt, act_dat_key, ACT_DAT_KEYBITS);
+	aes_crypt_ecb(&aes_ctxt, AES_ENCRYPT, rif+0x50, rif+0x50);//encrypt rif with act.dat first key primary key table
+	
+	uint8_t index_act_key[4]={0};//very first key in act.dat primary table
+	uint8_t index_act_key_enc[0x10];
+	aes_setkey_enc(&aes_ctxt, rif_key_const, RIF_KEYBITS);
+	aes_crypt_ecb(&aes_ctxt, AES_ENCRYPT, rif+0x40, rif+0x40);
+	uint64_t timestamp=0x1619BF6DDCA; //today
+	timestamp=swap_uint64(timestamp);
+	uint32_t version_number=1;
+	version_number=swap_uint32(version_number);
+	uint32_t license_type=0x00010002;
+	license_type=swap_uint32(license_type);
+	uint64_t expiration_time=0;
+	expiration_time=swap_uint64(expiration_time);
+	memcpy(rif, &version_number,4);
+	memcpy(rif+4, &license_type,4);
+	memcpy(rif+8,&account_id,8);
+	memcpy(rif+0x10, content_id, 0x24);
+//	memcpy(rif+0x40, index_act_key_enc, 0x10);
+//	memcpy(rif+0x50, klicensee_enc_rif,0x10);
+	memcpy(rif+0x60, &timestamp, 8);
+	memcpy(rif+0x68, &expiration_time,8);
+	uint8_t sha1_digest[20];
+	sha1(rif, 0x70,sha1_digest);
 	uint8_t R[0x15];
 	uint8_t S[0x15];
 	ecdsa_sign(sha1_digest, R, S);
@@ -1444,6 +1565,11 @@ int read_act_dat_and_make_rif_batch(char *path)
 	char bufRap[PATH_MAX + 1]; 
 	char bufDir[PATH_MAX + 1];
 
+	// let's set the ecdsa curve just once
+	ecdsa_set_curve();
+	ecdsa_set_pub();
+	ecdsa_set_priv();
+
     if (d) {
 
     	// first get the real path
@@ -1453,7 +1579,7 @@ int read_act_dat_and_make_rif_batch(char *path)
 
       		// get the real path, we will use it later
       		sprintf(bufRap, "%s%s%s", bufDir, FILE_SEPARATOR, rap->d_name);
-	        int answer = read_act_dat_and_make_rif(bufRap);
+	        int answer = read_act_dat_and_make_rif_no_ecdsa_setting(bufRap);
 	        if(answer == -1) {
 	        	printf("Couldn't sign data: %s\n", bufRap);
 	        	return answer;

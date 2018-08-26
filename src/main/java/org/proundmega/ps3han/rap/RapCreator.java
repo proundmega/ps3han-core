@@ -1,15 +1,16 @@
 package org.proundmega.ps3han.rap;
 
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javax.xml.bind.DatatypeConverter;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 
 public class RapCreator {
 
     public static byte[] rapContentToBinary(String rapContent) {
-        return DatatypeConverter.parseHexBinary(rapContent);
+        try {
+            return Hex.decodeHex(rapContent.toCharArray());
+        } catch (DecoderException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

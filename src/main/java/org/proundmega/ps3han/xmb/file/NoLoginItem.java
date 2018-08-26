@@ -1,16 +1,16 @@
 package org.proundmega.ps3han.xmb.file;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
-@Data
-@AllArgsConstructor
 public class NoLoginItem {
     private String elementName;
     
     private static final String NO_LOGIN_CONSTANT = "type:x-xmb/xmlnpsignup";
+
+    public NoLoginItem(String elementName) {
+        this.elementName = elementName;
+    }
     
     public Element toElement() {
         Element element = DocumentHelper.createElement("Item");
@@ -20,4 +20,14 @@ public class NoLoginItem {
         
         return element;
     }
+
+    public String getElementName() {
+        return elementName;
+    }
+
+    public void setElementName(String elementName) {
+        this.elementName = elementName;
+    }
+    
+    
 }

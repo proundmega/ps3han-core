@@ -1,7 +1,5 @@
 package org.proundmega.ps3han.rap;
 
-import org.proundmega.ps3han.rap.RapOutputFactory;
-import org.proundmega.ps3han.rap.RifOutputFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,7 +8,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.proundmega.ps3han.SelfCleaningDirectorie;
-import org.proundmega.ps3han.core.PSNStore;
 import static org.proundmega.ps3han.TestConstants.*;
 import org.proundmega.ps3han.TestUtils;
 import org.proundmega.ps3han.core.Entry;
@@ -25,7 +22,7 @@ public class RifOutputFactoryTest extends SelfCleaningDirectorie {
         List<Entry> entries = EntryParser.parseEntries(TestUtils.getTestResource(TEST_DATABASE_1).getAbsolutePath());
         RapOutputFactory rapsFactory = new RapOutputFactory(entries);
         rapsFactory.storeRapsOnDirectory(getUserData().getRapsWorkingDirectory());
-        RifOutputFactory factory = new RifOutputFactory(getUserData(), "");
+        RifOutputFactory factory = new RifOutputFactory(getUserData());
         factory.createRiffs();
         
         UserData userData = getUserData();
@@ -40,7 +37,7 @@ public class RifOutputFactoryTest extends SelfCleaningDirectorie {
         List<Entry> entries = EntryParser.parseEntries(TestUtils.getTestResource(TEST_DATABASE_1).getAbsolutePath());
         RapOutputFactory rapsFactory = new RapOutputFactory(entries);
         rapsFactory.storeRapsOnDirectory(getUserData().getRapsWorkingDirectory());
-        RifOutputFactory factory = new RifOutputFactory(getUserData(), "");
+        RifOutputFactory factory = new RifOutputFactory(getUserData());
         factory.createRiffs();
         
         UserData userData = getUserData();

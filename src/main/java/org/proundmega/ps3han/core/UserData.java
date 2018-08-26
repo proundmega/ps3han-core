@@ -3,12 +3,9 @@ package org.proundmega.ps3han.core;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import lombok.Data;
 import org.codehaus.plexus.util.FileUtils;
 
-@Data
 public class UserData {
-
     private String workDirectory;
     private String actDatLocation;
     private String idpsHexLocation;
@@ -70,5 +67,43 @@ public class UserData {
         deleteAndRecreateDirectory(getRapsWorkingDirectory());
         deleteAndRecreateDirectory(getRiffWorkingDirectory());
         deleteAndRecreateDirectory(getBinWorkingDirectory());
+    }
+
+    public String getWorkDirectory() {
+        return workDirectory;
+    }
+
+    public void setWorkDirectory(String workDirectory) {
+        this.workDirectory = workDirectory;
+    }
+
+    public String getActDatLocation() {
+        return actDatLocation;
+    }
+
+    public void setActDatLocation(String actDatLocation) {
+        this.actDatLocation = actDatLocation;
+    }
+
+    public String getIdpsHexLocation() {
+        return idpsHexLocation;
+    }
+
+    public void setIdpsHexLocation(String idpsHexLocation) {
+        this.idpsHexLocation = idpsHexLocation;
+    }
+
+    @Override
+    public String toString() {
+        return "UserData{" + "workDirectory=" + workDirectory + ", actDatLocation=" + actDatLocation + ", idpsHexLocation=" + idpsHexLocation + '}';
+    }
+
+    public UserData createSubWorkDir(String subWorkDir) {
+        UserData subUserData = new UserData();
+        subUserData.setWorkDirectory(workDirectory + File.separator + subWorkDir);
+        subUserData.setActDatLocation(actDatLocation);
+        subUserData.setIdpsHexLocation(idpsHexLocation);
+        
+        return subUserData;
     }
 }

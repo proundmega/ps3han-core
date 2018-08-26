@@ -3,21 +3,19 @@ package org.proundmega.ps3han.rap;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.SystemUtils;
 import org.proundmega.ps3han.core.UserData;
 
-@AllArgsConstructor
 public class RifOutputFactory {
     private UserData userData;
-    private String binDir;
 
+    public RifOutputFactory(UserData userData) {
+        this.userData = userData;
+    }
+    
     public void createRiffs() throws IOException {
         copyRafsToRifDirectory();
-        Signer signer = Plataform.createSigner(userData);
-        signer.copySigner(binDir);
+        Signer signer = Platform.createSigner(userData);
+        signer.copySigner();
         signer.signAllRaps();
         deleteRaps();
     }

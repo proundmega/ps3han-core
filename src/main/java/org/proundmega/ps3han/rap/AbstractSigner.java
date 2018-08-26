@@ -2,21 +2,26 @@ package org.proundmega.ps3han.rap;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.proundmega.ps3han.core.UserData;
 
-@AllArgsConstructor
 public abstract class AbstractSigner implements Signer {
     protected UserData userData;
 
     private static final String PKG_ID = "RIF000-INSTALLER_00-0000000000000000";
     private static final String PKG_NAME = PKG_ID + ".pkg";
     private static final String PKG_NAME_SIGNED = PKG_ID + ".pkg_signed.pkg";
+    private static final String BASE_NAME_BIN = "/bin";
+    
+    public AbstractSigner(UserData userData) {
+        this.userData = userData;
+    }
 
     protected abstract List<String> getFilenamesToCopyToBin();
 
@@ -25,18 +30,19 @@ public abstract class AbstractSigner implements Signer {
     protected abstract List<String> getPackerCommand();
 
     @Override
-    public void copySigner(String origin) {
+    public void copySigner() {
         try {
             List<String> filesToCopyToBin = getFilenamesToCopyToBin();
             File binDirectory = new File(userData.getBinWorkingDirectory());
             
-            if(origin == null) {
-                origin = "bin";
-            }
-            
             for (String fileNameToCopy : filesToCopyToBin) {
-                File binFile = new File(origin + File.separator + fileNameToCopy);
-                Files.copy(binFile.toPath(), binDirectory.toPath().resolve(fileNameToCopy));
+                final String binFileName = BASE_NAME_BIN + "/" + fileNameToCopy;
+                InputStream binFile = getClass().getResourceAsStream(binFileName);
+                final Path destinyFile = binDirectory.toPath().resolve(fileNameToCopy);
+                Files.copy(binFile, destinyFile);
+                
+                // set executable flag to file
+                destinyFile.toFile().setExecutable(true);
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -133,16 +139,16 @@ public abstract class AbstractSigner implements Signer {
     }
 
     private Process createSignerProcessForPkg(String command, File fileToSign, File binDirectory) throws InterruptedException, IOException {
-        File outputSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "outputSigning.log");
-        File errorSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "errorSigning.log");
+        File outputSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "outputSigningPackage.log");
+        File errorSigning = new File(userData.getLogForWorkingDirectory() + File.separator + "errorSigningPackage.log");
 
         ProcessBuilder builder = new ProcessBuilder(command,
                  fileToSign.getAbsolutePath(),
                  "ps3");
-        builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
         builder.directory(binDirectory.getAbsoluteFile());
         Process process = builder.start();
+        FileUtils.copyInputStreamToFile(process.getInputStream(), outputSigning);
+        FileUtils.copyInputStreamToFile(process.getErrorStream(), errorSigning);
         process.waitFor();
         return process;
     }
